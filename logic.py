@@ -61,7 +61,16 @@ class DB_Manager:
         sql = """INSERT INTO projects 
         (user_id, project_name, url, status_id) 
         values(?, ?, ?, ?)"""
-        self.__executemany(sql, [data])
+        self.__executemany(sql, data)
+
+    def insert_skill(self, user_id, project_name, skill):
+        sql = 'SELECT project_id FROM projects WHERE project_name = ? AND user_id = ?'
+        project_id = self.__select_data(sql, (project_name, user_id))[0][0]
+        skill_id = self.__select_data('SELECT skill_id FROM skills WHERE skill_name = ?', (skill,))[0][0]
+        data = [(project_id, skill_id)]
+        sql = 'INSERT OR IGNORE INTO project_skills VALUES(?, ?)'
+        self.__executemany(sql, data)
+
 
     def get_statuses(self):
         sql="SELECT status_name from status"
@@ -70,7 +79,7 @@ class DB_Manager:
     def update_projects(self, param, data):
         sql = f"""UPDATE projects SET {param} = ? 
         WHERE project_name = ? AND user_id = ?"""
-        self.__executemany(sql, [data])
+        self.__executemany(sql,[data])
 
     def get_projects(self, user_id):
         sql="""SELECT * FROM projects 
@@ -109,6 +118,19 @@ class DB_Manager:
         WHERE project_name=? AND user_id=?
         """
         return self.__select_data(sql=sql, data = (project_name, user_id))
+    
+    def delete_project(self, user_id, project_id):
+        sql = sql = """
+        DELETE FROM projects 
+        WHERE user_id = ? AND project_id = ? """
+        self.__executemany(sql, [(user_id, project_id)])
+
+            
+    def delete_skill(self, project_id, skill_id):
+        sql ="""
+        DELETE FROM skills 
+        WHERE skill_id = ? AND project_id = ? """
+        self.__executemany(sql, [(skill_id, project_id)])
 
         
 
